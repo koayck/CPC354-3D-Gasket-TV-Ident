@@ -54,11 +54,12 @@ window.onload = function init() {
   modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
   scaleMatrixLoc = gl.getUniformLocation(program, "scaleMatrix");
 
-  // Step 4. Create buffers and set up buffers
+  // Step 4. Generate initial gasket
+  generateGasket();
+
+  // Step 6. Create buffers and set up buffers
   setupBuffers(program);
 
-  // Step 5. Generate initial gasket
-  generateGasket();
 
   // Step 6. Start render loop
   render();
