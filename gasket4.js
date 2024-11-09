@@ -57,9 +57,8 @@ window.onload = function init() {
   // Step 4. Generate initial gasket
   generateGasket();
 
-  // Step 6. Create buffers and set up buffers
+  // Step 5. Create buffers and set up buffers
   setupBuffers(program);
-
 
   // Step 6. Start render loop
   render();
