@@ -2,7 +2,7 @@
 
 # Introduction
 
-This project is a 3D gasket animation of a TV ident for the course CPC354 Computer Graphics and Visualisation. The program is written in JavaScript and uses WebGL for rendering.
+This project is a 3D gasket animation of a TV ident for the course CPC354 Computer Graphics & Visualization. The program is written in JavaScript and uses WebGL for rendering.
 
 # Objective
 
