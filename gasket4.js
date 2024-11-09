@@ -98,10 +98,7 @@ function initializeControls() {
     .addEventListener("click", function () {
       console.log("Starting animation");
       isAnimating = true;
-      animationPhase = 0;
-      rotationAngle = 0;
-      scaleValue = 1.0;
-      translation = vec3(0.0, 0.0, 0.0);
+      document.getElementById("startAnimation").textContent = "Resume Animation";
     });
 
   document
@@ -109,6 +106,17 @@ function initializeControls() {
     .addEventListener("click", function () {
       console.log("Stopping animation");
       isAnimating = false;
+    });
+  
+  document
+    .getElementById("restartAnimation")
+    .addEventListener("click", function () {
+      console.log("Restarting animation");
+      isAnimating = true;
+      animationPhase = 0;
+      rotationAngle = 0;
+      scaleValue = 1.0;
+      translation = vec3(0.0, 0.0, 0.0);
     });
 }
 
