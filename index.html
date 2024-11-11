@@ -36,17 +36,38 @@
         border: 1px solid #000;
         transform: scale(0.8) translateZ(0);
       }
+
+      .bg {
+        background: grey;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
       .controls {
-        position: absolute;
-        top: 10px;
-        left: 520px;
-        background: rgba(255,255,255,0.8);
+        background: rgba(255, 255, 255, 0.8);
         padding: 10px;
         border-radius: 5px;
       }
+
       .control-group {
         margin-bottom: 10px;
       }
+
+      button {
+        width: 128px;
+        height: 28px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 5px;
+        background: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+
       label {
         display: block;
         margin-bottom: 5px;
@@ -54,36 +75,42 @@
     </style>
   </head>
 
-  <body>
-    <canvas id="gl-canvas" width="512" height="512">
+  <body class="bg">
+    <canvas id="gl-canvas" width="1024" height="1024">
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
 
     <div class="controls">
       <div class="control-group">
         <label for="subdivisions">Subdivisions:</label>
-        <input type="range" id="subdivisions" min="0" max="5" value="3">
+        <input type="range" id="subdivisions" min="0" max="5" value="3" />
         <span id="subdivisionsValue">3</span>
       </div>
 
       <div class="control-group">
         <label for="speed">Animation Speed:</label>
-        <input type="range" id="speed" min="1" max="10" value="5">
+        <input type="range" id="speed" min="1" max="10" value="5" />
         <span id="speedValue">5</span>
       </div>
 
       <div class="control-group">
         <label>Colors:</label>
-        <input type="color" id="color1" value="#ff0000">
-        <input type="color" id="color2" value="#00ff00">
-        <input type="color" id="color3" value="#0000ff">
-        <input type="color" id="color4" value="#000000">
+        <input type="color" id="color1" value="#ff0000" />
+        <input type="color" id="color2" value="#00ff00" />
+        <input type="color" id="color3" value="#0000ff" />
+        <input type="color" id="color4" value="#000000" />
       </div>
 
       <div class="control-group">
-        <button id="startAnimation">Start Animation</button>
-        <button id="stopAnimation">Stop Animation</button>
+        <button id="animationButton">Start Animation</button>
+        <br />
         <button id="restartAnimation">Restart Animation</button>
+        <br />
+        <button id="rotateX">Rotate X 90°</button>
+        <br />
+        <button id="rotateY">Rotate Y 90°</button>
+        <br />
+        <button id="rotateZ">Rotate Z 90°</button>
       </div>
     </div>
   </body>
