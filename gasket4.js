@@ -1,6 +1,9 @@
 "use strict";
 
 var canvas;
+var canvasWidth = 1.0; // Assuming normalized device coordinates (-1 to 1)
+var canvasHeight = 1.0;
+var vertices;
 var gl;
 
 var points = [];
@@ -10,10 +13,17 @@ var NumTimesToSubdivide = 3;
 
 // Initialnimation state
 var animationPhase = 0;
+var rotationChoice = 0;
 var rotationAngle = 0;
+var rotationAngleX = 0;
+var rotationAngleY = 0;
+var rotationAngleZ = 0;
 var scaleValue = 1.0;
+var position = vec3(0.0, 0.0, 0.0);
+var velocity = vec3(0.01, 0.01, 0.0);
 var translation = vec3(0.0, 0.0, 0.0);
 var isAnimating = false;
+var isRotating = false;
 var animationSpeed = 5;
 
 // Matrices
@@ -64,6 +74,18 @@ window.onload = function init() {
   render();
 };
 
+function initializeAnimation() {
+  position = vec3(0.0, 0.0, 0.0);
+  velocity = vec3(0.05, 0.05, 0.0);
+  animationPhase = 5;
+  rotationAngle = 0;
+  rotationAngleX = 0;
+  rotationAngleY = 0;
+  rotationAngleZ = 0;
+  scaleValue = 1.0;
+  translation = vec3(0.0, 0.0, 0.0);
+}
+
 function initializeControls() {
   // Subdivisions slider
   document
@@ -94,30 +116,42 @@ function initializeControls() {
 
   // Animation controls
   document
-    .getElementById("startAnimation")
+    .getElementById("animationButton")
     .addEventListener("click", function () {
-      console.log("Starting animation");
-      isAnimating = true;
-      document.getElementById("startAnimation").textContent = "Resume Animation";
+      isAnimating = !isAnimating;
+      if (isAnimating) {
+        console.log("Starting animation");
+        document.getElementById("animationButton").textContent =
+          "Pause Animation";
+      } else {
+        console.log("Stopping animation");
+        document.getElementById("animationButton").textContent =
+          "Start Animation";
+      }
     });
 
-  document
-    .getElementById("stopAnimation")
-    .addEventListener("click", function () {
-      console.log("Stopping animation");
-      isAnimating = false;
-    });
-  
   document
     .getElementById("restartAnimation")
     .addEventListener("click", function () {
       console.log("Restarting animation");
-      isAnimating = true;
-      animationPhase = 0;
-      rotationAngle = 0;
-      scaleValue = 1.0;
-      translation = vec3(0.0, 0.0, 0.0);
+      initializeAnimation();
     });
+
+  // Rotation controls
+  document.getElementById("rotateX").addEventListener("click", function () {
+    rotationChoice = 0;
+    isRotating = true;
+  });
+
+  document.getElementById("rotateY").addEventListener("click", function () {
+    rotationChoice = 1;
+    isRotating = true;
+  });
+
+  document.getElementById("rotateZ").addEventListener("click", function () {
+    rotationChoice = 2;
+    isRotating = true;
+  });
 }
 
 function hexToRgb(hex) {
@@ -136,11 +170,11 @@ function generateGasket() {
   colors = [];
 
   // Define the initial vertices of the tetrahedron
-  var vertices = [
-    vec3(0.0, 0.0, -1.0),
-    vec3(0.0, 0.9428, 0.3333),
-    vec3(-0.8165, -0.4714, 0.3333),
-    vec3(0.8165, -0.4714, 0.3333),
+  vertices = [
+    vec3(0.0, 0.0, -0.5),
+    vec3(0.0, 0.4714, 0.1667),
+    vec3(-0.4082, -0.2357, 0.1667),
+    vec3(0.4082, -0.2357, 0.1667),
   ];
 
   // Recursively divide the tetrahedron to create the gasket
@@ -236,12 +270,76 @@ function updateAnimation() {
       }
       break;
 
-    case 5: // Move around
-      const time = Date.now() / 1000;
-      translation[0] = 0.2 * Math.sin(time * speed);
-      translation[1] = 0.2 * Math.cos(time * speed);
+    case 5: // Move around and bounce
+      // Update position based on velocity and speed
+      position[0] += velocity[0] * speed;
+      position[1] += velocity[1] * speed;
+
+      // Apply scaling to vertices
+      var scaledVertices = applyScaling(vertices, scaleValue);
+
+      // Check for collisions with canvas borders using vertices and bounce
+      var collisionX = false;
+      var collisionY = false;
+
+      for (var i = 0; i < scaledVertices.length; i++) {
+        var vertex = scaledVertices[i];
+        var transformedX = vertex[0] + position[0];
+        var transformedY = vertex[1] + position[1];
+
+        if (transformedX >= canvasWidth || transformedX <= -canvasWidth) {
+          collisionX = true;
+        }
+        if (transformedY >= canvasHeight || transformedY <= -canvasHeight) {
+          collisionY = true;
+        }
+      }
+
+      if (collisionX) {
+        velocity[0] = -velocity[0];
+      }
+      if (collisionY) {
+        velocity[1] = -velocity[1];
+      }
+
+      // Update translation based on position
+      translation[0] = position[0];
+      translation[1] = position[1];
       break;
   }
+}
+
+function rotation() {
+  if (!isRotating) return;
+
+  switch (rotationChoice) {
+    case 0: // Rotate around x-axis 90 degrees
+      rotationAngleX = (rotationAngleX + 2) % 360;
+      if (rotationAngleX % 90 === 0) {
+        isRotating = false;
+      }
+      break;
+
+    case 1: // Rotate around y-axis 90 degrees
+      rotationAngleY = (rotationAngleY + 2) % 360;
+      if (rotationAngleY % 90 === 0) {
+        isRotating = false;
+      }
+      break;
+
+    case 2: // Rotate around z-axis 90 degrees
+      rotationAngleZ = (rotationAngleZ + 2) % 360;
+      if (rotationAngleZ % 90 === 0) {
+        isRotating = false;
+      }
+      break;
+  }
+}
+
+function applyScaling(vertices, scaleValue) {
+  return vertices.map(vertex => {
+    return vec3(vertex[0] * scaleValue, vertex[1] * scaleValue, vertex[2] * scaleValue);
+  });
 }
 
 function render() {
@@ -253,6 +351,7 @@ function render() {
 
   // Update the animation based on current animation phase
   updateAnimation();
+  rotation();
 
   // Create transformation matrices
   modelViewMatrix = mat4();
@@ -263,8 +362,12 @@ function render() {
     translate(translation[0], translation[1], 0.0)
   );
 
-  // Apply rotation around the y-axis
   modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngle, [0, 1, 0]));
+
+  // Apply rotation around the x, y, and z axes
+  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngleX, [1, 0, 0]));
+  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngleY, [0, 1, 0]));
+  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngleZ, [0, 0, 1]));
 
   scaleMatrix = scale(scaleValue, scaleValue, scaleValue);
 
