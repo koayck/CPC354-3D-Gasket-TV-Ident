@@ -29,6 +29,7 @@ var animationSpeed = 5;
 // Matrices
 var modelViewMatrix;
 var scaleMatrix;
+var combinedRotationMatrix;
 var modelViewMatrixLoc;
 var scaleMatrixLoc;
 
@@ -77,7 +78,7 @@ window.onload = function init() {
 function initializeAnimation() {
   position = vec3(0.0, 0.0, 0.0);
   velocity = vec3(0.05, 0.05, 0.0);
-  animationPhase = 5;
+  animationPhase = 4;
   rotationAngle = 0;
   rotationAngleX = 0;
   rotationAngleY = 0;
@@ -275,36 +276,42 @@ function updateAnimation() {
       position[0] += velocity[0] * speed;
       position[1] += velocity[1] * speed;
 
-      // Apply scaling to vertices
-      var scaledVertices = applyScaling(vertices, scaleValue);
-
+      // Update translation based on position
+      translation[0] = position[0];
+      translation[1] = position[1];
+      
+      
+      // Get the current transformed vertices
+      var transformedVertices = applyTransformations(
+        vertices,
+        scaleMatrix,
+        combinedRotationMatrix,
+        translation
+      );
+      console.log("🚀 ~ updateAnimation ~ transformedVertices:", transformedVertices)
+      
       // Check for collisions with canvas borders using vertices and bounce
       var collisionX = false;
       var collisionY = false;
-
-      for (var i = 0; i < scaledVertices.length; i++) {
-        var vertex = scaledVertices[i];
-        var transformedX = vertex[0] + position[0];
-        var transformedY = vertex[1] + position[1];
-
-        if (transformedX >= canvasWidth || transformedX <= -canvasWidth) {
+      
+      for (var i = 0; i < transformedVertices.length; i++) {
+        var vertex = transformedVertices[i];
+        
+        if (vertex[0] >= canvasWidth || vertex[0] <= -canvasWidth) {
           collisionX = true;
         }
-        if (transformedY >= canvasHeight || transformedY <= -canvasHeight) {
+        if (vertex[1] >= canvasHeight || vertex[1] <= -canvasHeight) {
           collisionY = true;
         }
       }
-
+      
       if (collisionX) {
         velocity[0] = -velocity[0];
       }
       if (collisionY) {
         velocity[1] = -velocity[1];
       }
-
-      // Update translation based on position
-      translation[0] = position[0];
-      translation[1] = position[1];
+      
       break;
   }
 }
@@ -332,13 +339,37 @@ function rotation() {
       if (rotationAngleZ % 90 === 0) {
         isRotating = false;
       }
+      console.log("🚀 ~ rotation ~ rotationAngleZ:", rotationAngleZ)
       break;
   }
 }
 
-function applyScaling(vertices, scaleValue) {
-  return vertices.map(vertex => {
-    return vec3(vertex[0] * scaleValue, vertex[1] * scaleValue, vertex[2] * scaleValue);
+function applyTransformations(vertices, scaleMatrix, rotationMatrix, translation) {
+  return vertices.map((vertex) => {
+    // Apply scaling
+    let scaledVertex = mult(scaleMatrix, vec4(vertex));
+    
+    // Apply rotation
+    let rotatedVertex = mult(rotationMatrix, scaledVertex);
+    console.log("🚀 ~ returnvertices.map ~ rotatedVertex:", rotatedVertex)
+    
+    // Apply translation
+    let transformedVertex = vec3(
+      rotatedVertex[0] + translation[0],
+      rotatedVertex[1] + translation[1],
+      rotatedVertex[2] + 0.0
+    );
+    
+    
+    let test = mat4();
+    test = mult(test, translate(translation[0], translation[1], 0.0));
+    test = mult(test, rotate(rotationAngle, [0, 1, 0]));
+    test = mult(test, rotationMatrix);
+
+    console.log("🚀 ~ returnvertices.map ~ test:", test)
+    console.log("🚀 ~ returnvertices.map ~ modelview:", modelViewMatrix)
+
+    return transformedVertex;
   });
 }
 
@@ -365,9 +396,18 @@ function render() {
   modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngle, [0, 1, 0]));
 
   // Apply rotation around the x, y, and z axes
-  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngleX, [1, 0, 0]));
-  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngleY, [0, 1, 0]));
-  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngleZ, [0, 0, 1]));
+  let rotationXMatrix = rotateX(rotationAngleX);
+  let rotationYMatrix = rotateY(rotationAngleY);
+  let rotationZMatrix = rotateZ(rotationAngleZ);
+  
+  // Combine the rotation matrices
+  combinedRotationMatrix = mult(
+    rotationZMatrix,
+    mult(rotationYMatrix, rotationXMatrix)
+  );
+
+  // Apply the combined rotation to the modelViewMatrix
+  modelViewMatrix = mult(modelViewMatrix, combinedRotationMatrix);
 
   scaleMatrix = scale(scaleValue, scaleValue, scaleValue);
 
