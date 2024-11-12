@@ -191,6 +191,11 @@ function initializeControls() {
     rotationInfChoice = 2;
     isRotatingInf = true;
   });
+
+  document.getElementById("ouiiaa").addEventListener("click", function () {
+    rotationInfChoice = 3;
+    isRotatingInf = true;
+  });
 }
 
 function hexToRgb(hex) {
@@ -356,6 +361,19 @@ function updateAnimation() {
   }
 }
 
+var initialOscillationTime = 240; // Initial duration of oscillation before reset (in frames)
+var extendedOscillationTime = 340; // Extended duration for the second rotation phase
+var oscillationTime = initialOscillationTime; // Current oscillation time (starts with initial value)
+var oscillationCounter = 0; // Counter for oscillation frames
+var isPaused = false; // Tracks if the object is in the pause phase
+var pauseCounter = 0; // Counter for pause frames
+var initialPauseDuration = 160; // Duration of the first pause (in frames)
+var extendedPauseDuration = 130; // Duration of the second pause (in frames)
+var pauseDuration = initialPauseDuration; // Current pause duration
+var pauseCount = 0; // Counts how many times the pause has occurred
+var pauseLimit = 2; // The limit on the number of pauses
+var rotationSpeed = 2; // Initial rotation speed
+
 function rotationInf() {  
   if (!isRotatingInf) return;
 
@@ -368,6 +386,56 @@ function rotationInf() {
       break;
     case 2:
       rotationAngleZ = (rotationAngleZ + 2) % 360;
+      break;
+    case 3:
+      // Parameters for oscillation
+      const amplitude = 0.08; // Controls the height of oscillation
+      const frequency = 0.04; // Controls the speed of oscillation
+
+      if (isPaused) {
+        // Increment pause counter during the pause phase
+        pauseCounter++;
+    
+        if (pauseCounter >= pauseDuration) {
+          // End the pause phase after reaching the pause duration
+          isPaused = false;
+          pauseCounter = 0;
+          pauseCount++; // Increment the pause count
+    
+          // Adjust settings based on pause count
+          if (pauseCount === 1) {
+            // After the first pause, set up for the second rotation phase
+            oscillationTime = extendedOscillationTime;
+            pauseDuration = extendedPauseDuration; // Extend the second pause duration
+          } else if (pauseCount === 2) {
+            // After the second pause, increase the rotation speed
+            rotationSpeed = 8; // Faster rotation after the second pause
+          }
+        }
+      } else {
+        if (oscillationCounter < oscillationTime) {
+          // Perform oscillation (up and down movement)
+          translation[1] = amplitude * Math.sin(rotationAngleY * frequency);
+    
+          // Rotate continuously around the y-axis with variable speed
+          rotationAngleY = (rotationAngleY + rotationSpeed) % 360;
+    
+          // Increment the oscillation counter
+          oscillationCounter++;
+        } else {
+          // Reset after the oscillation time has elapsed
+          translation = vec3(0.0, 0.0, 0.0); // Reset position to the origin
+          rotationAngleY = 0; // Reset rotation angle
+    
+          // Set pause phase if pause count is less than the limit
+          if (pauseCount < pauseLimit) {
+            isPaused = true;
+          }
+    
+          // Reset the oscillation counter to restart the process after the pause
+          oscillationCounter = 0;
+        }
+      }
       break;
   }
 }
