@@ -2,9 +2,13 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="./output.css" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./output.css" rel="stylesheet" />
+    <script
+      src="https://kit.fontawesome.com/e53a96cf56.js"
+      crossorigin="anonymous"
+    ></script>
+
     <title>3D Sierpinski Gasket TV Ident</title>
 
     <script id="vertex-shader" type="x-shader/x-vertex">
@@ -35,76 +39,194 @@
     <script type="text/javascript" src="gasket4.js"></script>
   </head>
 
-  <body class="bg-gray-500 flex flex-row justify-center items-center h-screen">
-    <canvas 
-      id="gl-canvas" 
-      width="1024" 
-      height="1024"
-      class="border border-black transform scale-80 translate-z-0">
+  <!-- <script>
+    var w = window.innerWidth * 0.8;
+    var h = window.innerHeight * 0.8;
+
+    // Set the canvas size
+    window.onload = function () {
+      var canvas = document.getElementById("gl-canvas");
+      canvas.width = w; // Set the canvas width
+      canvas.height = h; // Set the canvas height
+    };
+  </script> -->
+
+  <body class="bg-gray-500 flex h-screen min-h-screen justify-center">
+    <!-- canvas to render the gasket -->
+    <canvas
+      id="gl-canvas"
+      width="640"
+      height="640"
+      class="border border-black transform scale-80 translate-z-0"
+    >
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
 
-    <div class="bg-white/80 p-4 rounded-lg">
+    <!-- animation controls -->
+    <div class="bg-white/80 p-4 flex flex-col justify-center">
+      <!-- subdivision -->
       <div class="mb-4">
-        <label for="subdivisions" class="block mb-2">Subdivisions:</label>
-        <input type="range" id="subdivisions" min="0" max="5" value="3" class="w-full" />
-        <span id="subdivisionsValue" class="ml-2">3</span>
+        <div class="flex justify-between">
+          <label class="block mb-2 text-md font-semibold">Subdivisions</label>
+          <span id="subdivisionsValue" class="font-semibold">3</span>
+        </div>
+        <input
+          type="range"
+          id="subdivisions"
+          min="0"
+          max="5"
+          value="3"
+          class="w-full"
+        />
       </div>
 
+      <!-- animation speed -->
       <div class="mb-4">
-        <label for="speed" class="block mb-2">Animation Speed:</label>
-        <input type="range" id="speed" min="1" max="10" value="5" class="w-full" />
-        <span id="speedValue" class="ml-2">5</span>
+        <div class="flex justify-between">
+          <label class="block mb-2 text-md font-semibold">Animation Speed</label>
+          <span id="speedValue" class="font-semibold">5</span>
+        </div>
+        <input
+          type="range"
+          id="speed"
+          min="1"
+          max="10"
+          value="5"
+          class="w-full"
+        />
       </div>
 
+      <!-- colors -->
       <div class="mb-4">
-        <label class="block mb-2">Colors:</label>
-        <input type="color" id="color1" value="#ff0000" class="mb-2" />
-        <input type="color" id="color2" value="#00ff00" class="mb-2" />
-        <input type="color" id="color3" value="#0000ff" class="mb-2" />
-        <input type="color" id="color4" value="#000000" class="mb-2" />
+        <label class="block mb-2 text-md font-semibold">Colors</label>
+        <div class="flex space-x-2">
+          <input
+            type="color"
+            id="color1"
+            value="#ff0000"
+            class="w-full h-12 border-2 border-gray-300 cursor-pointer transition duration-200 ease-in-out hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          <input
+            type="color"
+            id="color2"
+            value="#00ff00"
+            class="w-full h-12 border-2 border-gray-300 cursor-pointer transition duration-200 ease-in-out hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          <input
+            type="color"
+            id="color3"
+            value="#0000ff"
+            class="w-full h-12 border-2 border-gray-300 cursor-pointer transition duration-200 ease-in-out hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          <input
+            type="color"
+            id="color4"
+            value="#000000"
+            class="w-full h-12 border-2 border-gray-300 cursor-pointer transition duration-200 ease-in-out hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
       </div>
 
-      <div class="mb-4">
-        <button id="animationButton" 
-          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
-          Start Animation
-        </button>
-        
-        <button id="restartAnimation" 
-          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
-          Restart Animation
-        </button>
-        
-        <button id="rotateX180" 
-          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
-          Rotate X 180°
-        </button>
-        
-        <button id="rotateY180" 
-          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
-          Rotate Y 180°
-        </button>
-        
-        <button id="rotateZ180" 
-          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
-          Rotate Z 180°
-        </button>
-        
-        <div class="flex items-center mb-2">
-          <input type="radio" id="rotateXInf" name="rotateInf" class="mr-2" />
-          <label for="rotateXInf">Rotate X Infinitely</label>
+      <!-- rotation -->
+      <section class="mb-4 flex flex-col gap-2">
+        <div class="flex flex-col gap-2 justify-center">
+          <div>
+            <!-- <i class="fa-solid fa-rotate"></i> -->
+            <span class="font-semibold">Rotate 180°</span>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              id="rotateX180"
+              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
+            >
+              X-axis
+            </button>
+            <button
+              id="rotateY180"
+              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
+            >
+              Y-axis
+            </button>
+            <button
+              id="rotateZ180"
+              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
+            >
+              Z-axis
+            </button>
+          </div>
         </div>
-        
-        <div class="flex items-center mb-2">
-          <input type="radio" id="rotateYInf" name="rotateInf" class="mr-2" />
-          <label for="rotateYInf">Rotate Y Infinitely</label>
+
+        <div class="flex flex-col gap-2 justify-center">
+          <div>
+            <!-- <i class="fa-solid fa-rotate"></i> -->
+            <!-- <i class="fa-solid fa-infinity"></i> -->
+            <span class="font-semibold">Rotate Infinitely</span>
+          </div>
+          <div class="flex gap-2">
+            <div class="flex items-center mb-2">
+              <input
+                type="radio"
+                id="rotateXInf"
+                name="rotateInf"
+                class="hidden peer"
+              />
+              <label
+                for="rotateXInf"
+                class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              >
+                X-axis
+              </label>
+            </div>
+
+            <div class="flex items-center mb-2">
+              <input
+                type="radio"
+                id="rotateYInf"
+                name="rotateInf"
+                class="hidden peer"
+              />
+              <label
+                for="rotateYInf"
+                class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              >
+                Y-axis
+              </label>
+            </div>
+
+            <div class="flex items-center mb-2">
+              <input
+                type="radio"
+                id="rotateZInf"
+                name="rotateInf"
+                class="hidden peer"
+              />
+              <label
+                for="rotateZInf"
+                class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              >
+                Z-axis
+              </label>
+            </div>
+          </div>
         </div>
-        
-        <div class="flex items-center mb-2">
-          <input type="radio" id="rotateZInf" name="rotateInf" class="mr-2" />
-          <label for="rotateZInf">Rotate Z Infinitely</label>
-        </div>
+      </section>
+
+      <!-- start/stop/reset animation -->
+      <div class="flex gap-2 flex-col w-full mt-10">
+        <button
+          id="animationButton"
+          class="w-full px-3 py-2 rounded-md bg-green-500 text-white cursor-pointer hover:bg-green-600"
+        >
+          <i class="fa-solid fa-play" id="animationIcon"></i>
+        </button>
+
+        <button
+          id="resetAnimation"
+          class="w-full px-3 py-2 rounded-md bg-slate-500 text-white cursor-pointer hover:bg-slate-600"
+        >
+          Reset
+        </button>
       </div>
     </div>
   </body>

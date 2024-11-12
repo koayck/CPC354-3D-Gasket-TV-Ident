@@ -95,7 +95,7 @@ function resetAnimation() {
 
 function resetRadioButtons() {
   const radioButtons = document.querySelectorAll('input[name="rotateInf"]');
-  radioButtons.forEach(radio => {
+  radioButtons.forEach((radio) => {
     radio.checked = false; // Uncheck each radio button
   });
 }
@@ -135,17 +135,25 @@ function initializeControls() {
       isAnimating = !isAnimating;
       if (isAnimating) {
         console.log("Starting animation");
-        document.getElementById("animationButton").textContent =
-          "Pause Animation";
+        document
+          .getElementById("animationButton")
+          .classList.add("bg-red-500", "hover:bg-red-600");
+
+        document.getElementById("animationIcon").classList.remove("fa-play");
+        document.getElementById("animationIcon").classList.add("fa-pause");
       } else {
         console.log("Stopping animation");
-        document.getElementById("animationButton").textContent =
-          "Start Animation";
+        document
+          .getElementById("animationButton")
+          .classList.remove("bg-red-500", "hover:bg-red-600");
+
+        document.getElementById("animationIcon").classList.add("fa-play");
+        document.getElementById("animationIcon").classList.remove("fa-pause");
       }
     });
 
   document
-    .getElementById("restartAnimation")
+    .getElementById("resetAnimation")
     .addEventListener("click", function () {
       console.log("Restarting animation");
       resetAnimation();
@@ -444,7 +452,7 @@ function render() {
 
   // Step 1: Scaling
   scaleMatrix = scale(scaleValue, scaleValue, scaleValue);
-  
+
   // Step 2: Rotation
   // Apply rotation around the x, y, and z axes
   let rotationXMatrix = rotate(rotationAngleX, [1, 0, 0]);
