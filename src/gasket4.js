@@ -133,6 +133,7 @@ function initializeControls() {
     .getElementById("animationButton")
     .addEventListener("click", function () {
       isAnimating = !isAnimating;
+      isRotatingInf = false;
       if (isAnimating) {
         console.log("Starting animation");
         document
@@ -354,7 +355,7 @@ function updateAnimation() {
   }
 }
 
-function rotationInf() {
+function rotationInf() {  
   if (!isRotatingInf) return;
 
   switch (rotationInfChoice) {
