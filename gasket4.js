@@ -13,7 +13,8 @@ var NumTimesToSubdivide = 3;
 
 // Initialization state
 var animationPhase = 0;
-var rotationChoice = 0;
+var rotationBy180Choice = 0;
+var rotationInfChoice = -1;
 var rotationAngle = 0;
 var rotationAngleX = 0;
 var rotationAngleY = 0;
@@ -23,7 +24,8 @@ var position = vec3(0.0, 0.0, 0.0);
 var velocity = vec3(0.01, 0.01, 0.0);
 var translation = vec3(0.0, 0.0, 0.0);
 var isAnimating = false;
-var isRotating = false;
+var isRotatingBy180 = false;
+var isRotatingInf = false;
 var animationSpeed = 5; // debug
 
 // Matrices
@@ -139,19 +141,34 @@ function initializeControls() {
     });
 
   // Rotation controls
-  document.getElementById("rotateX").addEventListener("click", function () {
-    rotationChoice = 0;
-    isRotating = true;
+  document.getElementById("rotateX180").addEventListener("click", function () {
+    rotationBy180Choice = 0;
+    isRotatingBy180 = true;
   });
 
-  document.getElementById("rotateY").addEventListener("click", function () {
-    rotationChoice = 1;
-    isRotating = true;
+  document.getElementById("rotateY180").addEventListener("click", function () {
+    rotationBy180Choice = 1;
+    isRotatingBy180 = true;
   });
 
-  document.getElementById("rotateZ").addEventListener("click", function () {
-    rotationChoice = 2;
-    isRotating = true;
+  document.getElementById("rotateZ180").addEventListener("click", function () {
+    rotationBy180Choice = 2;
+    isRotatingBy180 = true;
+  });
+
+  document.getElementById("rotateXInf").addEventListener("click", function () {
+    rotationInfChoice = 0;
+    isRotatingInf = true;
+  });
+
+  document.getElementById("rotateYInf").addEventListener("click", function () {
+    rotationInfChoice = 1;
+    isRotatingInf = true;
+  });
+
+  document.getElementById("rotateZInf").addEventListener("click", function () {
+    rotationInfChoice = 2;
+    isRotatingInf = true;
   });
 }
 
@@ -299,9 +316,6 @@ function updateAnimation() {
       for (var i = 0; i < transformedVertices.length; i++) {
         var vertex = transformedVertices[i];
 
-        console.log("🚀 ~ updateAnimation ~ vertex[0]:", vertex[0]);
-        console.log("🚀 ~ updateAnimation ~ vertex[1]:", vertex[1]);
-
         if (vertex[0] >= canvasWidth || vertex[0] <= -canvasWidth) {
           collisionX = true;
         }
@@ -321,30 +335,46 @@ function updateAnimation() {
   }
 }
 
-function rotation() {
-  if (!isRotating) return;
+function rotationInf() {
+  if (!isRotatingInf) return;
+
+  switch (rotationInfChoice) {
+    case 0:
+      rotationAngleX = (rotationAngleX + 2) % 360;
+      break;
+    case 1:
+      rotationAngleY = (rotationAngleY + 2) % 360;
+      break;
+    case 2:
+      rotationAngleZ = (rotationAngleZ + 2) % 360;
+      break;
+  }
+}
+
+function rotationBy180() {
+  if (!isRotatingBy180) return;
 
   // console.log("🚀 ~ rotation ~ rotationChoice:", rotationChoice);
 
-  switch (rotationChoice) {
+  switch (rotationBy180Choice) {
     case 0: // Rotate around x-axis 90 degrees
       rotationAngleX = (rotationAngleX + 2) % 360;
       if (rotationAngleX % 180 === 0) {
-        isRotating = false;
+        isRotatingBy180 = false;
       }
       break;
 
     case 1: // Rotate around y-axis 90 degrees
       rotationAngleY = (rotationAngleY + 2) % 360;
       if (rotationAngleY % 180 === 0) {
-        isRotating = false;
+        isRotatingBy180 = false;
       }
       break;
 
     case 2: // Rotate around z-axis 90 degrees
       rotationAngleZ = (rotationAngleZ + 2) % 360;
       if (rotationAngleZ % 180 === 0) {
-        isRotating = false;
+        isRotatingBy180 = false;
       }
       // // console.log("🚀 ~ rotation ~ rotationAngleZ:", rotationAngleZ);
       break;
@@ -372,10 +402,10 @@ function applyTransformations(
       rotatedVertex[2] + 0.0
     );
 
-    let test = mat4();
-    test = mult(test, translate(translation[0], translation[1], 0.0));
-    test = mult(test, rotate(rotationAngle, [0, 1, 0]));
-    test = mult(test, rotationMatrix);
+    // let test = mat4();
+    // test = mult(test, translate(translation[0], translation[1], 0.0));
+    // test = mult(test, rotate(rotationAngle, [0, 1, 0]));
+    // test = mult(test, rotationMatrix);
 
     // // console.log("🚀 ~ returnvertices.map ~ test:", test);
     // // console.log("🚀 ~ returnvertices.map ~ modelview:", modelViewMatrix);
@@ -394,7 +424,9 @@ function render() {
   // Create transformation matrices
   modelViewMatrix = mat4();
 
-  rotation();
+  // Extra functionalities
+  rotationBy180();
+  rotationInf();
 
   // Update the animation based on current animation phase
   updateAnimation();
