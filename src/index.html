@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="./output.css" rel="stylesheet">
+    
+    <title>3D Sierpinski Gasket TV Ident</title>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      attribute vec3 vPosition;
+      attribute vec3 vColor;
+      uniform mat4 modelViewMatrix;
+      uniform mat4 scaleMatrix;
+      varying vec4 color;
+
+      void main() {
+          gl_Position = modelViewMatrix * scaleMatrix * vec4(vPosition, 1.0);
+          color = vec4(vColor, 1.0);
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      precision mediump float;
+      varying vec4 color;
+
+      void main() {
+          gl_FragColor = color;
+      }
+    </script>
+
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script type="text/javascript" src="gasket4.js"></script>
+  </head>
+
+  <body class="bg-gray-500 flex flex-row justify-center items-center h-screen">
+    <canvas 
+      id="gl-canvas" 
+      width="1024" 
+      height="1024"
+      class="border border-black transform scale-80 translate-z-0">
+      Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+
+    <div class="bg-white/80 p-4 rounded-lg">
+      <div class="mb-4">
+        <label for="subdivisions" class="block mb-2">Subdivisions:</label>
+        <input type="range" id="subdivisions" min="0" max="5" value="3" class="w-full" />
+        <span id="subdivisionsValue" class="ml-2">3</span>
+      </div>
+
+      <div class="mb-4">
+        <label for="speed" class="block mb-2">Animation Speed:</label>
+        <input type="range" id="speed" min="1" max="10" value="5" class="w-full" />
+        <span id="speedValue" class="ml-2">5</span>
+      </div>
+
+      <div class="mb-4">
+        <label class="block mb-2">Colors:</label>
+        <input type="color" id="color1" value="#ff0000" class="mb-2" />
+        <input type="color" id="color2" value="#00ff00" class="mb-2" />
+        <input type="color" id="color3" value="#0000ff" class="mb-2" />
+        <input type="color" id="color4" value="#000000" class="mb-2" />
+      </div>
+
+      <div class="mb-4">
+        <button id="animationButton" 
+          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
+          Start Animation
+        </button>
+        
+        <button id="restartAnimation" 
+          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
+          Restart Animation
+        </button>
+        
+        <button id="rotateX180" 
+          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
+          Rotate X 180°
+        </button>
+        
+        <button id="rotateY180" 
+          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
+          Rotate Y 180°
+        </button>
+        
+        <button id="rotateZ180" 
+          class="w-32 h-7 px-3 py-1 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600">
+          Rotate Z 180°
+        </button>
+        
+        <div class="flex items-center mb-2">
+          <input type="radio" id="rotateXInf" name="rotateInf" class="mr-2" />
+          <label for="rotateXInf">Rotate X Infinitely</label>
+        </div>
+        
+        <div class="flex items-center mb-2">
+          <input type="radio" id="rotateYInf" name="rotateInf" class="mr-2" />
+          <label for="rotateYInf">Rotate Y Infinitely</label>
+        </div>
+        
+        <div class="flex items-center mb-2">
+          <input type="radio" id="rotateZInf" name="rotateInf" class="mr-2" />
+          <label for="rotateZInf">Rotate Z Infinitely</label>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
