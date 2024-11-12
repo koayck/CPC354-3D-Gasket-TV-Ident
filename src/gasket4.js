@@ -133,16 +133,17 @@ function initializeControls() {
     .getElementById("animationButton")
     .addEventListener("click", function () {
       isAnimating = !isAnimating;
-      isRotatingInf = false;
       if (isAnimating) {
+        isRotatingInf = true;
         console.log("Starting animation");
         document
-          .getElementById("animationButton")
-          .classList.add("bg-red-500", "hover:bg-red-600");
-
+        .getElementById("animationButton")
+        .classList.add("bg-red-500", "hover:bg-red-600");
+        
         document.getElementById("animationIcon").classList.remove("fa-play");
         document.getElementById("animationIcon").classList.add("fa-pause");
       } else {
+        isRotatingInf = false;
         console.log("Stopping animation");
         document
           .getElementById("animationButton")
