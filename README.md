@@ -24,21 +24,47 @@ The objective of this project is to create a 3D gasket animation of a TV ident t
 git clone https://github.com/Jisi-A/CPC354-3D-Gasket-TV-Ident.git
 ```
 
-2. Open the index.html file with live server
+2. Install dependencies
 
-3. Play with the animation controls.
+```bash
+npm install
+```
+
+3. Run the live server
+
+4. You are good to go!
+
+5. Extra:
+
+If you intend to update the styling, you can run the following command to update the css file:
+
+```bash
+npx tailwindcss -i src/input.css -o src/output.css --watch
+```
+
+This will watch for any changes to the styling in HTML files and update the output.css file accordingly. If you wish to know more, you can visit the [Tailwind CSS installation guide](https://tailwindcss.com/docs/installation).
 
 # Project Structure
+
 ```
 CPC354-3D-Gasket-TV-Ident
+├─ .gitignore
+├─ .vscode
+│  └─ settings.json
 ├─ assg_requirement.md
-├─ gasket4.js (main program)
-├─ index.html
-├─ initShaders.js (contains helper functions to compile and link WebGL shaders to the application)
-├─ MV.js (provides matrix and vector manipulation functions APIs for WebGL)
-├─ webgl-utils.js (standard utilities from Google to set up a WebGL context)
+├─ package-lock.json
+├─ package.json
+├─ README.md
 ├─ sample (for reference)
 │  ├─ gasket4.html
 │  └─ gasket4.js
-└─ README.md
+├─ src
+│  ├─ gasket4.js (main program)
+│  ├─ index.html
+│  ├─ initShaders.js (contains helper functions to compile and link WebGL shaders to the application)
+│  ├─ input.css
+│  ├─ MV.js (provides matrix and vector manipulation functions APIs for WebGL)
+│  ├─ output.css (contains tailwind utility classes)
+│  └─ webgl-utils.js (standard utilities from Google to set up a WebGL context)
+└─ tailwind.config.js
 ```
