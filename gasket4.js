@@ -77,7 +77,7 @@ window.onload = function init() {
   render();
 };
 
-function initializeAnimation() {
+function resetAnimation() {
   position = vec3(0.0, 0.0, 0.0);
   velocity = vec3(0.05, 0.05, 0.0);
   animationPhase = 0; // debug
@@ -87,6 +87,17 @@ function initializeAnimation() {
   rotationAngleZ = 0;
   scaleValue = 1.0;
   translation = vec3(0.0, 0.0, 0.0);
+
+  // Reset infinite rotation
+  isRotatingInf = false;
+  resetRadioButtons();
+}
+
+function resetRadioButtons() {
+  const radioButtons = document.querySelectorAll('input[name="rotateInf"]');
+  radioButtons.forEach(radio => {
+    radio.checked = false; // Uncheck each radio button
+  });
 }
 
 function initializeControls() {
@@ -137,7 +148,7 @@ function initializeControls() {
     .getElementById("restartAnimation")
     .addEventListener("click", function () {
       console.log("Restarting animation");
-      initializeAnimation();
+      resetAnimation();
     });
 
   // Rotation controls
