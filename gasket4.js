@@ -11,7 +11,7 @@ var colors = [];
 
 var NumTimesToSubdivide = 3;
 
-// Initialnimation state
+// Initialization state
 var animationPhase = 0;
 var rotationChoice = 0;
 var rotationAngle = 0;
@@ -24,7 +24,7 @@ var velocity = vec3(0.01, 0.01, 0.0);
 var translation = vec3(0.0, 0.0, 0.0);
 var isAnimating = false;
 var isRotating = false;
-var animationSpeed = 5;
+var animationSpeed = 5; // debug
 
 // Matrices
 var modelViewMatrix;
@@ -78,7 +78,7 @@ window.onload = function init() {
 function initializeAnimation() {
   position = vec3(0.0, 0.0, 0.0);
   velocity = vec3(0.05, 0.05, 0.0);
-  animationPhase = 4;
+  animationPhase = 0; // debug
   rotationAngle = 0;
   rotationAngleX = 0;
   rotationAngleY = 0;
@@ -223,42 +223,42 @@ function setupBuffers(program) {
 function updateAnimation() {
   if (!isAnimating) return;
 
-  console.log("Animation Phase:", animationPhase);
-  console.log("Rotation Angle:", rotationAngle);
-  console.log("Scale Value:", scaleValue);
-  console.log("Translation:", translation);
+  // console.log("Animation Phase:", animationPhase);
+  // console.log("Rotation Angle:", rotationAngle);
+  // console.log("Scale Value:", scaleValue);
+  // console.log("Translation:", translation);
 
-  const speed = animationSpeed / 100;
+  const speed = animationSpeed / 10; // debug
 
   switch (animationPhase) {
     case 0: // Rotate right 180 degrees
-      rotationAngle += speed * 2;
-      if (rotationAngle >= 180) {
-        rotationAngle = 180;
+      rotationAngleY += speed * 2;
+      if (rotationAngleY >= 180) {
+        rotationAngleY = 180;
         animationPhase = 1;
       }
       break;
 
     case 1: // Rotate back to center
-      rotationAngle -= speed * 2;
-      if (rotationAngle <= 0) {
-        rotationAngle = 0;
+      rotationAngleY -= speed * 2;
+      if (rotationAngleY <= 0) {
+        rotationAngleY = 0;
         animationPhase = 2;
       }
       break;
 
     case 2: // Rotate left 180 degrees
-      rotationAngle -= speed * 2;
-      if (rotationAngle <= -180) {
-        rotationAngle = -180;
+      rotationAngleY -= speed * 2;
+      if (rotationAngleY <= -180) {
+        rotationAngleY = -180;
         animationPhase = 3;
       }
       break;
 
     case 3: // Rotate back to center
-      rotationAngle += speed * 2;
-      if (rotationAngle >= 0) {
-        rotationAngle = 0;
+      rotationAngleY += speed * 2;
+      if (rotationAngleY >= 0) {
+        rotationAngleY = 0;
         animationPhase = 4;
       }
       break;
@@ -279,24 +279,29 @@ function updateAnimation() {
       // Update translation based on position
       translation[0] = position[0];
       translation[1] = position[1];
-      
-      
+
       // Get the current transformed vertices
       var transformedVertices = applyTransformations(
         vertices,
         scaleMatrix,
-        combinedRotationMatrix,
+        modelViewMatrix,
         translation
       );
-      console.log("🚀 ~ updateAnimation ~ transformedVertices:", transformedVertices)
-      
+      // // console.log(
+      // // "🚀 ~ updateAnimation ~ transformedVertices:",
+      // // transformedVertices
+      // // );
+
       // Check for collisions with canvas borders using vertices and bounce
       var collisionX = false;
       var collisionY = false;
-      
+
       for (var i = 0; i < transformedVertices.length; i++) {
         var vertex = transformedVertices[i];
-        
+
+        console.log("🚀 ~ updateAnimation ~ vertex[0]:", vertex[0]);
+        console.log("🚀 ~ updateAnimation ~ vertex[1]:", vertex[1]);
+
         if (vertex[0] >= canvasWidth || vertex[0] <= -canvasWidth) {
           collisionX = true;
         }
@@ -304,14 +309,14 @@ function updateAnimation() {
           collisionY = true;
         }
       }
-      
+
       if (collisionX) {
         velocity[0] = -velocity[0];
       }
       if (collisionY) {
         velocity[1] = -velocity[1];
       }
-      
+
       break;
   }
 }
@@ -319,55 +324,61 @@ function updateAnimation() {
 function rotation() {
   if (!isRotating) return;
 
+  // console.log("🚀 ~ rotation ~ rotationChoice:", rotationChoice);
+
   switch (rotationChoice) {
     case 0: // Rotate around x-axis 90 degrees
       rotationAngleX = (rotationAngleX + 2) % 360;
-      if (rotationAngleX % 90 === 0) {
+      if (rotationAngleX % 180 === 0) {
         isRotating = false;
       }
       break;
 
     case 1: // Rotate around y-axis 90 degrees
       rotationAngleY = (rotationAngleY + 2) % 360;
-      if (rotationAngleY % 90 === 0) {
+      if (rotationAngleY % 180 === 0) {
         isRotating = false;
       }
       break;
 
     case 2: // Rotate around z-axis 90 degrees
       rotationAngleZ = (rotationAngleZ + 2) % 360;
-      if (rotationAngleZ % 90 === 0) {
+      if (rotationAngleZ % 180 === 0) {
         isRotating = false;
       }
-      console.log("🚀 ~ rotation ~ rotationAngleZ:", rotationAngleZ)
+      // // console.log("🚀 ~ rotation ~ rotationAngleZ:", rotationAngleZ);
       break;
   }
 }
 
-function applyTransformations(vertices, scaleMatrix, rotationMatrix, translation) {
+function applyTransformations(
+  vertices,
+  scaleMatrix,
+  rotationMatrix,
+  translation
+) {
   return vertices.map((vertex) => {
-    // Apply scaling
+    // Step 1. Scaling
     let scaledVertex = mult(scaleMatrix, vec4(vertex));
-    
-    // Apply rotation
+
+    // Step 2. Rotation
     let rotatedVertex = mult(rotationMatrix, scaledVertex);
-    console.log("🚀 ~ returnvertices.map ~ rotatedVertex:", rotatedVertex)
-    
-    // Apply translation
+    // // console.log("🚀 ~ returnvertices.map ~ rotatedVertex:", rotatedVertex);
+
+    // Step 3. Translation
     let transformedVertex = vec3(
       rotatedVertex[0] + translation[0],
       rotatedVertex[1] + translation[1],
       rotatedVertex[2] + 0.0
     );
-    
-    
+
     let test = mat4();
     test = mult(test, translate(translation[0], translation[1], 0.0));
     test = mult(test, rotate(rotationAngle, [0, 1, 0]));
     test = mult(test, rotationMatrix);
 
-    console.log("🚀 ~ returnvertices.map ~ test:", test)
-    console.log("🚀 ~ returnvertices.map ~ modelview:", modelViewMatrix)
+    // // console.log("🚀 ~ returnvertices.map ~ test:", test);
+    // // console.log("🚀 ~ returnvertices.map ~ modelview:", modelViewMatrix);
 
     return transformedVertex;
   });
@@ -380,26 +391,23 @@ function render() {
   // Clear the canvas before drawing next frame
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Update the animation based on current animation phase
-  updateAnimation();
-  rotation();
-
   // Create transformation matrices
   modelViewMatrix = mat4();
 
-  // Apply translation
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    translate(translation[0], translation[1], 0.0)
-  );
+  rotation();
 
-  modelViewMatrix = mult(modelViewMatrix, rotate(rotationAngle, [0, 1, 0]));
+  // Update the animation based on current animation phase
+  updateAnimation();
 
-  // Apply rotation around the x, y, and z axes
-  let rotationXMatrix = rotateX(rotationAngleX);
-  let rotationYMatrix = rotateY(rotationAngleY);
-  let rotationZMatrix = rotateZ(rotationAngleZ);
+  // Step 1: Scaling
+  scaleMatrix = scale(scaleValue, scaleValue, scaleValue);
   
+  // Step 2: Rotation
+  // Apply rotation around the x, y, and z axes
+  let rotationXMatrix = rotate(rotationAngleX, [1, 0, 0]);
+  let rotationYMatrix = rotate(rotationAngleY, [0, 1, 0]);
+  let rotationZMatrix = rotate(rotationAngleZ, [0, 0, 1]);
+
   // Combine the rotation matrices
   combinedRotationMatrix = mult(
     rotationZMatrix,
@@ -409,7 +417,11 @@ function render() {
   // Apply the combined rotation to the modelViewMatrix
   modelViewMatrix = mult(modelViewMatrix, combinedRotationMatrix);
 
-  scaleMatrix = scale(scaleValue, scaleValue, scaleValue);
+  // Step 3: translation
+  modelViewMatrix = mult(
+    modelViewMatrix,
+    translate(translation[0], translation[1], 0.0)
+  );
 
   // Send matrices to shaders
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
