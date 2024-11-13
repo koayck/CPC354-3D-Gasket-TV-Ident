@@ -13,8 +13,11 @@
     <script>
       function playSound() {
         const sound = document.getElementById("buttonSound");
-        sound.currentTime = 0; // Reset sound to start
-        sound.play(); // Play the sound
+
+        // if sound is already playing, don't play it again
+        if (sound.paused) {
+          sound.play(); // Play the sound
+        }
       }
     </script>
 
@@ -92,7 +95,9 @@
       <!-- animation speed -->
       <div class="mb-4">
         <div class="flex justify-between">
-          <label class="block mb-2 text-md font-semibold">Animation Speed</label>
+          <label class="block mb-2 text-md font-semibold"
+            >Animation Speed</label
+          >
           <span id="speedValue" class="font-semibold">5</span>
         </div>
         <input
@@ -137,29 +142,28 @@
       </div>
 
       <!-- rotation -->
-      <section class="mb-4 flex flex-col gap-2">
-        <div class="flex flex-col gap-2 justify-center">
+      <section class="mb-4">
+        <div class="flex flex-col gap-2 justify-center mb-4">
           <div>
-            <!-- <i class="fa-solid fa-rotate"></i> -->
             <span class="font-semibold">Rotate 180°</span>
           </div>
 
           <div class="flex gap-2">
             <button
               id="rotateX180"
-              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
-              >
+              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+            >
               X-axis
             </button>
             <button
               id="rotateY180"
-              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
+              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               Y-axis
             </button>
             <button
               id="rotateZ180"
-              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
+              class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               Z-axis
             </button>
@@ -168,81 +172,82 @@
 
         <div class="flex flex-col gap-2 justify-center">
           <div>
-            <!-- <i class="fa-solid fa-rotate"></i> -->
-            <!-- <i class="fa-solid fa-infinity"></i> -->
             <span class="font-semibold">Rotate Infinitely</span>
           </div>
+
           <div class="flex gap-2">
-            <div class="flex items-center mb-2">
+            <div class="radio-wrapper">
               <input
                 type="radio"
                 id="rotateXInf"
                 name="rotateInf"
-                class="hidden peer"
+                class="hidden"
               />
-              <label
-                for="rotateXInf"
-                class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              <button
+                onclick="document.getElementById('rotateXInf').click()"
+                class="px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 data-[checked=true]:bg-blue-700"
+                data-radio-button="rotateXInf"
               >
                 X-axis
-              </label>
+              </button>
             </div>
 
-            <div class="flex items-center mb-2">
+            <div class="radio-wrapper">
               <input
                 type="radio"
                 id="rotateYInf"
                 name="rotateInf"
-                class="hidden peer"
+                class="hidden"
               />
-              <label
-                for="rotateYInf"
-                class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              <button
+                onclick="document.getElementById('rotateYInf').click()"
+                class="px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 data-[checked=true]:bg-blue-700"
+                data-radio-button="rotateYInf"
               >
                 Y-axis
-              </label>
+              </button>
             </div>
 
-            <div class="flex items-center mb-2">
+            <div class="radio-wrapper">
               <input
                 type="radio"
                 id="rotateZInf"
                 name="rotateInf"
-                class="hidden peer"
+                class="hidden"
               />
-              <label
-                for="rotateZInf"
-                class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              <button
+                onclick="document.getElementById('rotateZInf').click()"
+                class="px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 data-[checked=true]:bg-blue-700"
+                data-radio-button="rotateZInf"
               >
                 Z-axis
-              </label>
+              </button>
             </div>
           </div>
         </div>
       </section>
-      <div class="items-center" onclick="playSound()">
-        <input
-          type="radio"
-          id="ouiiaa"
-          name="rotateInf"
-          class="hidden peer"
-        />
-        <label
-          for="ouiiaa"
-          class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
-        >
-          OUIIAAAAAAA
-        </label>
-      </div>
 
       <!-- start/stop/reset animation -->
       <div class="flex gap-2 flex-col w-full mt-10">
         <button
           id="animationButton"
-          class="w-full px-3 py-2 rounded-md bg-green-500 text-white cursor-pointer hover:bg-green-600"
+          class="w-full px-3 py-2 rounded-md bg-green-500 text-white cursor-pointer hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
         >
-          <i class="fa-solid fa-play" id="animationIcon"></i>
+          <i class="fa-solid fa-play mr-2" id="animationIcon"></i>
+          Default Mode
         </button>
+
+        <div class="text-center w-full font-semibold">OR</div>
+
+        <button
+          class="*:cursor-pointer px-4 py-2 bg-purple-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-purple-600 peer-checked:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+          onclick="playSound()"
+          id="nightClubMode"
+        >
+          Night Club Mode
+        </button>
+
+        <hr class="border border-gray-300" />
 
         <button
           id="resetAnimation"

@@ -9,8 +9,6 @@ var gl;
 var points = [];
 var colors = [];
 
-var NumTimesToSubdivide = 3;
-
 // Initialization state
 var animationPhase = 0;
 var rotationBy180Choice = 0;
@@ -27,6 +25,7 @@ var isAnimating = false;
 var isRotatingBy180 = false;
 var isRotatingInf = false;
 var animationSpeed = 5; // debug
+var numTimesToSubdivide = 3;
 
 // Matrices
 var modelViewMatrix;
@@ -75,6 +74,8 @@ window.onload = function init() {
 
   // Step 6. Start render loop
   render();
+
+  setupRadioButtonStates();
 };
 
 function resetAnimation() {
@@ -87,18 +88,57 @@ function resetAnimation() {
   rotationAngleZ = 0;
   scaleValue = 1.0;
   translation = vec3(0.0, 0.0, 0.0);
+  numTimesToSubdivide = 3;
+  animationSpeed = 5;
+
+  if (isNightClubMode) {
+    // reset the properties for night club mode
+    oscillationCounter = 0;
+    isPaused = false;
+    pauseCounter = 0;
+    pauseCount = 0;
+    pauseDuration = initialPauseDuration 
+    subdivisionCounter = 0;
+    rotationSpeed = 2;
+    oscillationTime = initialOscillationTime;
+    delayCounter = 0;
+    colorIndex = 0;
+
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+  }
 
   isAnimating = false;
-  // Reset infinite rotation
   isRotatingInf = false;
+  isNightClubMode = false;
+  isSpotlightMode = false;
   resetRadioButtons();
+  resetSliders();
+
+  // generate the initial gasket
+  generateGasket();
 }
 
 function resetRadioButtons() {
   const radioButtons = document.querySelectorAll('input[name="rotateInf"]');
   radioButtons.forEach((radio) => {
     radio.checked = false; // Uncheck each radio button
+    // Find the associated button and reset its data-checked attribute
+    const button = document.querySelector(`[data-radio-button="${radio.id}"]`);
+    if (button) {
+      button.dataset.checked = "false";
+      button.disabled = false;
+    }
   });
+
+  // enable the radio buttons
+  enableInfRotationControls();
+}
+
+function resetSliders() {
+  document.getElementById("subdivisions").value = 3;
+  document.getElementById("subdivisionsValue").textContent = 3;
+  document.getElementById("speed").value = 5;
+  document.getElementById("speedValue").textContent = 5;
 }
 
 function initializeControls() {
@@ -106,9 +146,9 @@ function initializeControls() {
   document
     .getElementById("subdivisions")
     .addEventListener("input", function (e) {
-      NumTimesToSubdivide = parseInt(e.target.value);
+      numTimesToSubdivide = parseInt(e.target.value);
       document.getElementById("subdivisionsValue").textContent =
-        NumTimesToSubdivide;
+        numTimesToSubdivide;
       generateGasket();
     });
 
@@ -133,19 +173,18 @@ function initializeControls() {
   document
     .getElementById("animationButton")
     .addEventListener("click", function () {
+      // disable night club mode button
+      document.getElementById("nightClubMode").disabled = true;
+
       isAnimating = !isAnimating;
       if (isAnimating) {
-        isRotatingInf = true;
-        console.log("Starting animation");
         document
-        .getElementById("animationButton")
-        .classList.add("bg-red-500", "hover:bg-red-600");
-        
+          .getElementById("animationButton")
+          .classList.add("bg-red-500", "hover:bg-red-600");
+
         document.getElementById("animationIcon").classList.remove("fa-play");
         document.getElementById("animationIcon").classList.add("fa-pause");
       } else {
-        isRotatingInf = false;
-        console.log("Stopping animation");
         document
           .getElementById("animationButton")
           .classList.remove("bg-red-500", "hover:bg-red-600");
@@ -158,7 +197,24 @@ function initializeControls() {
   document
     .getElementById("resetAnimation")
     .addEventListener("click", function () {
-      console.log("Restarting animation");
+      // reset animationButton to default color
+      document
+        .getElementById("animationButton")
+        .classList.remove("bg-red-500", "hover:bg-red-600");
+
+      document.getElementById("animationIcon").classList.remove("fa-pause");
+      document.getElementById("animationIcon").classList.add("fa-play");
+
+      // enable night club mode button
+      if (isNightClubMode) {
+        setControls(false);
+        var sound = document.getElementById("buttonSound");
+        sound.pause();
+        sound.currentTime = 0; // Reset sound to start
+      } else {
+        setControls(true);
+      }
+
       resetAnimation();
     });
 
@@ -193,10 +249,39 @@ function initializeControls() {
     isRotatingInf = true;
   });
 
-  document.getElementById("ouiiaa").addEventListener("click", function () {
-    rotationInfChoice = 3;
-    isRotatingInf = true;
-  });
+  document
+    .getElementById("nightClubMode")
+    .addEventListener("click", function () {
+      rotationInfChoice = 3;
+      isRotatingInf = true;
+      isNightClubMode = true;
+
+      setControls(true);
+    });
+}
+
+function setControls(state) {
+  // when night club mode is active
+  // state = true -> disable controls
+  // state = false -> enable controls
+
+  // when default mode is active
+  // state = true -> enable controls
+  // state = false -> disable controls
+  if (isNightClubMode) {
+    // disable all other button (except for reset button)
+    document.getElementById("rotateX180").disabled = state;
+    document.getElementById("rotateY180").disabled = state;
+    document.getElementById("rotateZ180").disabled = state;
+    disableInfRotationControls();
+    document.getElementById("animationButton").disabled = state;
+    
+    // disabled all sliders
+    document.getElementById("subdivisions").disabled = state;
+    document.getElementById("speed").disabled = state;
+  } else {
+    document.getElementById("nightClubMode").disabled = !state;
+  }
 }
 
 function hexToRgb(hex) {
@@ -228,7 +313,7 @@ function generateGasket() {
     vertices[1],
     vertices[2],
     vertices[3],
-    NumTimesToSubdivide
+    numTimesToSubdivide
   );
 
   // Update buffers
@@ -266,11 +351,6 @@ function setupBuffers(program) {
 
 function updateAnimation() {
   if (!isAnimating) return;
-
-  // console.log("Animation Phase:", animationPhase);
-  // console.log("Rotation Angle:", rotationAngle);
-  // console.log("Scale Value:", scaleValue);
-  // console.log("Translation:", translation);
 
   const speed = animationSpeed / 10; // debug
 
@@ -331,11 +411,6 @@ function updateAnimation() {
         modelViewMatrix,
         translation
       );
-      // // console.log(
-      // // "🚀 ~ updateAnimation ~ transformedVertices:",
-      // // transformedVertices
-      // // );
-
       // Check for collisions with canvas borders using vertices and bounce
       var collisionX = false;
       var collisionY = false;
@@ -375,6 +450,7 @@ var pauseCount = 0; // Counts how many times the pause has occurred
 var pauseLimit = 2; // The limit on the number of pauses
 var rotationSpeed = 2; // Initial rotation speed
 var isNightClubMode = false; // Tracks if night club mode is active
+var isSpotlightMode = false; // Tracks if spotlight mode is active
 
 // Global variables for managing subdivisions
 let minSubdivision = 0; // Minimum number of subdivisions
@@ -383,8 +459,9 @@ let subdivisionDirection = 1; // Controls oscillation direction (+1 or -1)
 let subdivisionDelay = 100; // Number of frames to wait before changing subdivision
 let subdivisionCounter = 0; // Counter to track frames for oscillation
 
-
 function oscillateSubdivision() {
+  if (!isSpotlightMode) return;
+
   // Increment subdivisionCounter each frame
   subdivisionCounter++;
 
@@ -393,10 +470,13 @@ function oscillateSubdivision() {
     subdivisionCounter = 0; // Reset the counter
 
     // Change the number of subdivisions based on direction
-    NumTimesToSubdivide += subdivisionDirection;
+    numTimesToSubdivide += subdivisionDirection;
 
     // Reverse direction if the limits are reached
-    if (NumTimesToSubdivide >= maxSubdivision || NumTimesToSubdivide <= minSubdivision) {
+    if (
+      numTimesToSubdivide >= maxSubdivision ||
+      numTimesToSubdivide <= minSubdivision
+    ) {
       subdivisionDirection *= -1; // Reverse direction
     }
 
@@ -405,7 +485,7 @@ function oscillateSubdivision() {
   }
 }
 
-function rotationInf() {  
+function rotationInf() {
   if (!isRotatingInf) return;
 
   switch (rotationInfChoice) {
@@ -426,13 +506,13 @@ function rotationInf() {
       if (isPaused) {
         // Increment pause counter during the pause phase
         pauseCounter++;
-    
+
         if (pauseCounter >= pauseDuration) {
           // End the pause phase after reaching the pause duration
           isPaused = false;
           pauseCounter = 0;
           pauseCount++; // Increment the pause count
-    
+
           // Adjust settings based on pause count
           if (pauseCount === 1) {
             // After the first pause, set up for the second rotation phase
@@ -441,35 +521,35 @@ function rotationInf() {
           } else if (pauseCount === 2) {
             // After the second pause, increase the rotation speed and activate night club mode
             rotationSpeed = 8; // Faster rotation after the second pause
-            isNightClubMode = true; // Activate night club mode
+            isSpotlightMode = true; // Activate spotlight mode
           }
         }
       } else {
         if (oscillationCounter < oscillationTime) {
           // Perform oscillation (up and down movement)
           translation[1] = amplitude * Math.sin(rotationAngleY * frequency);
-    
+
           // Rotate continuously around the y-axis with variable speed
           rotationAngleY = (rotationAngleY + rotationSpeed) % 360;
-    
+
           // Increment the oscillation counter
           oscillationCounter++;
         } else {
           // Reset after the oscillation time has elapsed
           translation = vec3(0.0, 0.0, 0.0); // Reset position to the origin
           rotationAngleY = 0; // Reset rotation angle
-    
+
           // Set pause phase if pause count is less than the limit
           if (pauseCount < pauseLimit) {
             isPaused = true;
           }
-    
+
           // Reset the oscillation counter to restart the process after the pause
           oscillationCounter = 0;
         }
-    
+
         // Change canvas background color in night club mode
-        if (isNightClubMode) {
+        if (isSpotlightMode) {
           changeCanvasColor();
         }
       }
@@ -503,17 +583,15 @@ function changeCanvasColor() {
     const [r, g, b] = colorCycle[colorIndex];
 
     // Apply the color to the WebGL canvas background
-    gl.clearColor(r, g, b, 0.90);
+    gl.clearColor(r, g, b, 0.9);
 
     // Increment colorIndex to cycle to the next color
     colorIndex = (colorIndex + 1) % colorCycle.length; // Loops back to 0 at the end
   }
 }
+
 function rotationBy180() {
   if (!isRotatingBy180) return;
-
-  // console.log("🚀 ~ rotation ~ rotationChoice:", rotationChoice);
-
   switch (rotationBy180Choice) {
     case 0: // Rotate around x-axis 90 degrees
       rotationAngleX = (rotationAngleX + 2) % 360;
@@ -534,7 +612,6 @@ function rotationBy180() {
       if (rotationAngleZ % 180 === 0) {
         isRotatingBy180 = false;
       }
-      // // console.log("🚀 ~ rotation ~ rotationAngleZ:", rotationAngleZ);
       break;
   }
 }
@@ -551,8 +628,6 @@ function applyTransformations(
 
     // Step 2. Rotation
     let rotatedVertex = mult(rotationMatrix, scaledVertex);
-    // // console.log("🚀 ~ returnvertices.map ~ rotatedVertex:", rotatedVertex);
-
     // Step 3. Translation
     let transformedVertex = vec3(
       rotatedVertex[0] + translation[0],
@@ -564,10 +639,6 @@ function applyTransformations(
     // test = mult(test, translate(translation[0], translation[1], 0.0));
     // test = mult(test, rotate(rotationAngle, [0, 1, 0]));
     // test = mult(test, rotationMatrix);
-
-    // // console.log("🚀 ~ returnvertices.map ~ test:", test);
-    // // console.log("🚀 ~ returnvertices.map ~ modelview:", modelViewMatrix);
-
     return transformedVertex;
   });
 }
@@ -575,11 +646,6 @@ function applyTransformations(
 function render() {
   // Request the next animation frame
   requestAnimationFrame(render);
-
-  if (isNightClubMode) {
-    changeCanvasColor(); // For color change effect
-    oscillateSubdivision(); // For subdivision oscillation
-  }
 
   // Clear the canvas before drawing next frame
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -590,6 +656,7 @@ function render() {
   // Extra functionalities
   rotationBy180();
   rotationInf();
+  oscillateSubdivision();
 
   // Update the animation based on current animation phase
   updateAnimation();
@@ -669,4 +736,48 @@ function divideTetra(a, b, c, d, count) {
     divideTetra(ac, bc, c, cd, count);
     divideTetra(ad, bd, cd, d, count);
   }
+}
+
+function disableInfRotationControls() {
+  ["X", "Y", "Z"].forEach((axis) => {
+    const input = document.getElementById(`rotate${axis}Inf`);
+    const button = document.querySelector(
+      `[data-radio-button="rotate${axis}Inf"]`
+    );
+    input.disabled = true;
+    button.disabled = true;
+  });
+}
+
+function enableInfRotationControls() {
+  ["X", "Y", "Z"].forEach((axis) => {
+    const input = document.getElementById(`rotate${axis}Inf`);
+    const button = document.querySelector(
+      `[data-radio-button="rotate${axis}Inf"]`
+    );
+    input.disabled = false;
+    button.disabled = false;
+  });
+}
+
+// Add this function to handle radio button changes
+function setupRadioButtonStates() {
+  const radioInputs = document.querySelectorAll('input[name="rotateInf"]');
+
+  radioInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      // Reset all buttons
+      document.querySelectorAll("[data-radio-button]").forEach((btn) => {
+        btn.dataset.checked = "false";
+      });
+
+      // Set checked state for the selected button
+      if (input.checked) {
+        const button = document.querySelector(
+          `[data-radio-button="${input.id}"]`
+        );
+        button.dataset.checked = "true";
+      }
+    });
+  });
 }
