@@ -134,16 +134,17 @@ function initializeControls() {
     .getElementById("animationButton")
     .addEventListener("click", function () {
       isAnimating = !isAnimating;
-      isRotatingInf = false;
       if (isAnimating) {
+        isRotatingInf = true;
         console.log("Starting animation");
         document
-          .getElementById("animationButton")
-          .classList.add("bg-red-500", "hover:bg-red-600");
-
+        .getElementById("animationButton")
+        .classList.add("bg-red-500", "hover:bg-red-600");
+        
         document.getElementById("animationIcon").classList.remove("fa-play");
         document.getElementById("animationIcon").classList.add("fa-pause");
       } else {
+        isRotatingInf = false;
         console.log("Stopping animation");
         document
           .getElementById("animationButton")
@@ -189,6 +190,11 @@ function initializeControls() {
 
   document.getElementById("rotateZInf").addEventListener("click", function () {
     rotationInfChoice = 2;
+    isRotatingInf = true;
+  });
+
+  document.getElementById("ouiiaa").addEventListener("click", function () {
+    rotationInfChoice = 3;
     isRotatingInf = true;
   });
 }
@@ -356,6 +362,49 @@ function updateAnimation() {
   }
 }
 
+var initialOscillationTime = 240; // Initial duration of oscillation before reset (in frames)
+var extendedOscillationTime = 320; // Extended duration for the second rotation phase
+var oscillationTime = initialOscillationTime; // Current oscillation time (starts with initial value)
+var oscillationCounter = 0; // Counter for oscillation frames
+var isPaused = false; // Tracks if the object is in the pause phase
+var pauseCounter = 0; // Counter for pause frames
+var initialPauseDuration = 170; // Duration of the first pause (in frames)
+var extendedPauseDuration = 130; // Duration of the second pause (in frames)
+var pauseDuration = initialPauseDuration; // Current pause duration
+var pauseCount = 0; // Counts how many times the pause has occurred
+var pauseLimit = 2; // The limit on the number of pauses
+var rotationSpeed = 2; // Initial rotation speed
+var isNightClubMode = false; // Tracks if night club mode is active
+
+// Global variables for managing subdivisions
+let minSubdivision = 0; // Minimum number of subdivisions
+let maxSubdivision = 10; // Maximum number of subdivisions
+let subdivisionDirection = 1; // Controls oscillation direction (+1 or -1)
+let subdivisionDelay = 100; // Number of frames to wait before changing subdivision
+let subdivisionCounter = 0; // Counter to track frames for oscillation
+
+
+function oscillateSubdivision() {
+  // Increment subdivisionCounter each frame
+  subdivisionCounter++;
+
+  // Change subdivision only when subdivisionCounter reaches subdivisionDelay
+  if (subdivisionCounter >= subdivisionDelay) {
+    subdivisionCounter = 0; // Reset the counter
+
+    // Change the number of subdivisions based on direction
+    NumTimesToSubdivide += subdivisionDirection;
+
+    // Reverse direction if the limits are reached
+    if (NumTimesToSubdivide >= maxSubdivision || NumTimesToSubdivide <= minSubdivision) {
+      subdivisionDirection *= -1; // Reverse direction
+    }
+
+    // Regenerate the gasket with the new number of subdivisions
+    generateGasket();
+  }
+}
+
 function rotationInf() {  
   if (!isRotatingInf) return;
 
@@ -369,9 +418,97 @@ function rotationInf() {
     case 2:
       rotationAngleZ = (rotationAngleZ + 2) % 360;
       break;
+    case 3:
+      // Parameters for oscillation
+      const amplitude = 0.08; // Controls the height of oscillation
+      const frequency = 0.04; // Controls the speed of oscillation
+
+      if (isPaused) {
+        // Increment pause counter during the pause phase
+        pauseCounter++;
+    
+        if (pauseCounter >= pauseDuration) {
+          // End the pause phase after reaching the pause duration
+          isPaused = false;
+          pauseCounter = 0;
+          pauseCount++; // Increment the pause count
+    
+          // Adjust settings based on pause count
+          if (pauseCount === 1) {
+            // After the first pause, set up for the second rotation phase
+            oscillationTime = extendedOscillationTime;
+            pauseDuration = extendedPauseDuration; // Extend the second pause duration
+          } else if (pauseCount === 2) {
+            // After the second pause, increase the rotation speed and activate night club mode
+            rotationSpeed = 8; // Faster rotation after the second pause
+            isNightClubMode = true; // Activate night club mode
+          }
+        }
+      } else {
+        if (oscillationCounter < oscillationTime) {
+          // Perform oscillation (up and down movement)
+          translation[1] = amplitude * Math.sin(rotationAngleY * frequency);
+    
+          // Rotate continuously around the y-axis with variable speed
+          rotationAngleY = (rotationAngleY + rotationSpeed) % 360;
+    
+          // Increment the oscillation counter
+          oscillationCounter++;
+        } else {
+          // Reset after the oscillation time has elapsed
+          translation = vec3(0.0, 0.0, 0.0); // Reset position to the origin
+          rotationAngleY = 0; // Reset rotation angle
+    
+          // Set pause phase if pause count is less than the limit
+          if (pauseCount < pauseLimit) {
+            isPaused = true;
+          }
+    
+          // Reset the oscillation counter to restart the process after the pause
+          oscillationCounter = 0;
+        }
+    
+        // Change canvas background color in night club mode
+        if (isNightClubMode) {
+          changeCanvasColor();
+        }
+      }
+      break;
   }
 }
 
+// Define an array of bright colors (red, green, yellow, blue)
+const colorCycle = [
+  [1.0, 0.0, 0.0], // Red
+  [0.0, 1.0, 0.0], // Green
+  [1.0, 1.0, 0.0], // Yellow
+  [0.0, 0.0, 1.0], // Blue
+  [1.0, 0.0, 1.0], // Blue
+];
+
+let colorIndex = 0; // Index to keep track of the current color
+let frameDelay = 10; // Number of frames to wait before changing color
+let delayCounter = 0; // Counter to track frames
+
+function changeCanvasColor() {
+  // Increment delay counter each frame
+  delayCounter++;
+
+  // Only change color when delayCounter reaches frameDelay
+  if (delayCounter >= frameDelay) {
+    // Reset delayCounter
+    delayCounter = 0;
+
+    // Set the color from the colorCycle array based on colorIndex
+    const [r, g, b] = colorCycle[colorIndex];
+
+    // Apply the color to the WebGL canvas background
+    gl.clearColor(r, g, b, 0.90);
+
+    // Increment colorIndex to cycle to the next color
+    colorIndex = (colorIndex + 1) % colorCycle.length; // Loops back to 0 at the end
+  }
+}
 function rotationBy180() {
   if (!isRotatingBy180) return;
 
@@ -438,6 +575,11 @@ function applyTransformations(
 function render() {
   // Request the next animation frame
   requestAnimationFrame(render);
+
+  if (isNightClubMode) {
+    changeCanvasColor(); // For color change effect
+    oscillateSubdivision(); // For subdivision oscillation
+  }
 
   // Clear the canvas before drawing next frame
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

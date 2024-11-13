@@ -4,10 +4,19 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./output.css" rel="stylesheet" />
+    <audio id="buttonSound" src="./ouiia.mp3"></audio>
     <script
       src="https://kit.fontawesome.com/e53a96cf56.js"
       crossorigin="anonymous"
     ></script>
+
+    <script>
+      function playSound() {
+        const sound = document.getElementById("buttonSound");
+        sound.currentTime = 0; // Reset sound to start
+        sound.play(); // Play the sound
+      }
+    </script>
 
     <title>3D Sierpinski Gasket TV Ident</title>
 
@@ -139,7 +148,7 @@
             <button
               id="rotateX180"
               class="px-4 py-2 rounded-md bg-blue-500 text-white cursor-pointer mb-2 hover:bg-blue-600"
-            >
+              >
               X-axis
             </button>
             <button
@@ -211,6 +220,20 @@
           </div>
         </div>
       </section>
+      <div class="items-center" onclick="playSound()">
+        <input
+          type="radio"
+          id="ouiiaa"
+          name="rotateInf"
+          class="hidden peer"
+        />
+        <label
+          for="ouiiaa"
+          class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded-md transition duration-200 ease-in-out hover:bg-blue-600 peer-checked:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+        >
+          OUIIAAAAAAA
+        </label>
+      </div>
 
       <!-- start/stop/reset animation -->
       <div class="flex gap-2 flex-col w-full mt-10">
