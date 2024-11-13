@@ -88,6 +88,7 @@ function resetAnimation() {
   scaleValue = 1.0;
   translation = vec3(0.0, 0.0, 0.0);
 
+  isAnimating = false;
   // Reset infinite rotation
   isRotatingInf = false;
   resetRadioButtons();
