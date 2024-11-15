@@ -628,6 +628,7 @@ function applyTransformations(
 
     // Step 2. Rotation
     let rotatedVertex = mult(rotationMatrix, scaledVertex);
+
     // Step 3. Translation
     let transformedVertex = vec3(
       rotatedVertex[0] + translation[0],
@@ -635,10 +636,6 @@ function applyTransformations(
       rotatedVertex[2] + 0.0
     );
 
-    // let test = mat4();
-    // test = mult(test, translate(translation[0], translation[1], 0.0));
-    // test = mult(test, rotate(rotationAngle, [0, 1, 0]));
-    // test = mult(test, rotationMatrix);
     return transformedVertex;
   });
 }
@@ -666,9 +663,9 @@ function render() {
 
   // Step 2: Rotation
   // Apply rotation around the x, y, and z axes
-  let rotationXMatrix = rotate(rotationAngleX, [1, 0, 0]);
-  let rotationYMatrix = rotate(rotationAngleY, [0, 1, 0]);
-  let rotationZMatrix = rotate(rotationAngleZ, [0, 0, 1]);
+  let rotationXMatrix = rotateX(rotationAngleX);
+  let rotationYMatrix = rotateY(rotationAngleY);
+  let rotationZMatrix = rotateZ(rotationAngleZ);
 
   // Combine the rotation matrices
   combinedRotationMatrix = mult(
