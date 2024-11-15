@@ -355,33 +355,33 @@ function updateAnimation() {
   const speed = animationSpeed / 10; // debug
 
   switch (animationPhase) {
-    case 0: // Rotate right 180 degrees
-      rotationAngleY += speed * 2;
-      if (rotationAngleY >= 180) {
-        rotationAngleY = 180;
+    case 0: // Rotate to right 180 degrees
+      rotationAngleY -= speed * 2;
+      if (rotationAngleY <= -180) {
+        rotationAngleY = -180;
         animationPhase = 1;
       }
       break;
 
     case 1: // Rotate back to center
-      rotationAngleY -= speed * 2;
-      if (rotationAngleY <= 0) {
+      rotationAngleY += speed * 2;
+      if (rotationAngleY >= 0) {
         rotationAngleY = 0;
         animationPhase = 2;
       }
       break;
-
-    case 2: // Rotate left 180 degrees
-      rotationAngleY -= speed * 2;
-      if (rotationAngleY <= -180) {
-        rotationAngleY = -180;
+``
+    case 2: // Rotate to left 180 degrees
+      rotationAngleY += speed * 2;
+      if (rotationAngleY >= 180) {
+        rotationAngleY = 180;
         animationPhase = 3;
       }
       break;
 
     case 3: // Rotate back to center
-      rotationAngleY += speed * 2;
-      if (rotationAngleY >= 0) {
+      rotationAngleY -= speed * 2;
+      if (rotationAngleY <= 0) {
         rotationAngleY = 0;
         animationPhase = 4;
       }
